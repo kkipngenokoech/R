@@ -1,0 +1,144 @@
+---
+title: Distribution of Public Service of Canada Employees by Designated Group According to Department or Agency
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+options(warn = -1)
+```
+
+## checking if our r is working
+```{r}
+print("Hello R world")
+```
+
+## Analysis of Table 1
+
+### we are loading required libraries
+Loading required libraries 
+```{r}
+#install.packages(c("readxl", "dplyr", "ggplot2", "tidyr"))
+library(readxl)
+library(janitor)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+### loading the data and cleaning the names
+we are going to load the data for table 1 and display the first few rows, just to ensure that our data is loaded successfully
+
+we also cleaned the data to use numbers only, excluding the percentages
+
+```{r}
+tab01_eng <- read_excel("~/Documents/programming/R/velma/keira/tab01-eng.xls", skip = 4, n_max = 75)
+Sys.setlocale(category = "LC_CTYPE", locale = "en_US.UTF-8")
+head(tab01_eng)
+print(dim(tab01_eng))
+tab01_eng <- clean_names(tab01_eng)
+print(colnames(tab01_eng))
+selected_colnames <- c("department_or_agency", "all_employees", "women", "members_of_a_visible_minority_group","persons_with_disabilities" , "aboriginal_peoples")
+head(tab01_eng)
+subset_data <- tab01_eng[, selected_colnames]
+subset_data <- subset_data[complete.cases(tab01_eng$department_or_agency), ]
+head(subset_data)
+```
+
+
+### visualization of the data
+
+
+1. Drawing a bar graph showing the different  distributions of employees categories across Department
+
+i) Converted the data to numerical data
+ii) Created a bar graph
+
+```{r}
+subset_data <- subset_data %>%
+  mutate_at(vars(all_employees, women, members_of_a_visible_minority_group, persons_with_disabilities, aboriginal_peoples),
+            as.numeric)
+
+subset_data_long <- subset_data %>%
+  gather(key = "category", value = "value", -department_or_agency)
+
+ggplot(subset_data_long, aes(x = department_or_agency, y = value, fill = category)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
+  labs(title = "Type of promotions in regions by Population distribution",
+       y = "Population Promotion", x = "Regions of Work") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(limits = c(0, 16000), breaks = seq(0, 16000, by = 1000))
+```
+
+from the bar graph above you can see:
+
+- women have an averagely distributed rate of promotion
+
+
+
+1. distribution of employment across regions
+
+```{r}
+ggplot(subset_data, aes(x = department_or_agency, y = all_employees, fill = department_or_agency)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Number of All Employees by Occupational categories",
+       x = "Types of Occupational Categories",
+       y = "Number of All Employees") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+from the bar graph above you can deduce:
+
+- NCR posts a high record of promotions to its employees
+- low rate of promotions in Yukon
+
+2. Scatter plot for distribution of women across regions of work
+
+```{r
+ggplot(subset_data, aes(x = region_of_work, y = women)) +
+  geom_point() +
+  labs(title = "Scatter Plot region experiencing promotions vs Women",
+       x = "regions experiencing promotions",
+       y = "Women") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+from the scatter plot above we can deduce:
+
+- NCR still poses as a high employer for women and yukon poses the opposite - lowest employement
+
+
+
+3. summary of how the employees are spread out
+
+```{r
+summary_data <- subset_data %>%
+  summarise(
+    all_employees = sum(all_employees),
+    women = sum(women),
+    persons_in_a_visible_minority_group = sum(persons_in_a_visible_minority_group),
+    persons_with_disabilities = sum(persons_with_disabilities),
+    aboriginal_peoples = sum(aboriginal_peoples)
+  )
+summary_data_long <- gather(summary_data, key = "category", value = "value")
+ggplot(summary_data_long, aes(x = "", y = value, fill = category)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y") +
+  labs(title = "Pie Chart of Population Distribution",
+       fill = "Category") +
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank())
+```
+
+from the pie chart above we can deduce:
+
+- women are the second most employed category
+- Aboriginal people and person with disabilities have a few representation in the job industry

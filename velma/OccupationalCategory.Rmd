@@ -1,6 +1,5 @@
 ---
-title: Distribution of Public Service of Canada Employees by Designated Group and
-  Region of Work
+title: Distribution of Public Service of Canada Employees by Designated Group and Occupational Category
 output:
   pdf_document: default
   word_document: default
@@ -37,34 +36,36 @@ we also cleaned the data to use numbers only, excluding the percentages
 
 ```{r}
 library(readxl)
-tab02_eng <- read_excel("~/Documents/programming/R/velma/keira/tab02-eng.xls", skip = 4, n_max = 18)
+tab03_eng <- read_excel("~/Documents/programming/R/velma/keira/tab03-eng.xls", skip = 4, n_max = 10)
 Sys.setlocale(category = "LC_CTYPE", locale = "en_US.UTF-8")
-head(tab02_eng)
-print(dim(tab02_eng))
-tab02_eng <- clean_names(tab02_eng)
-selected_colnames <- c("region_of_work", "all_employees", "women", "members_of_a_visible_minority_group","persons_with_disabilities" , "aboriginal_peoples")
-head(tab02_eng)
-subset_data <- tab02_eng[, selected_colnames]
-#subset_data <- filter(subset_data, !is.na(region_of_work))
-subset_data <- subset_data[complete.cases(tab02_eng$region_of_work), ]
+tab03_eng <- clean_names(tab03_eng)
+print(colnames(tab03_eng))
+selected_colnames <- c("occupational_group", "all_employees", "women", "members_of_a_visible_minority_group","persons_with_disabilities" , "aboriginal_peoples")
+subset_data <- tab03_eng[, selected_colnames]
+subset_data <- subset_data[complete.cases(tab03_eng$occupational_group), ]
 head(subset_data)
 ```
+
+
 ### visualization of the data
-1. Drawing a bar graph showing the different  distrbutions of employees categories across regions
+
+
+1. Drawing a bar graph showing the different  distrbutions of employees categories across different job types
 i) Converted the data to numerical data
 ii) Created a bar graph
+
 ```{r}
 subset_data <- subset_data %>%
   mutate_at(vars(all_employees, women, members_of_a_visible_minority_group, persons_with_disabilities, aboriginal_peoples),
             as.numeric)
 
 subset_data_long <- subset_data %>%
-  gather(key = "category", value = "value", -region_of_work)
+  gather(key = "category", value = "value", -occupational_group)
 
-ggplot(subset_data_long, aes(x = region_of_work, y = value, fill = category)) +
+ggplot(subset_data_long, aes(x = occupational_group, y = value, fill = category)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  labs(title = "Population Distribution by Region of Work",
-       y = "Population") +
+  labs(title = "Population Distribution by occupation type",
+       y = "Population", x = "Occupation Group") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_y_continuous(limits = c(0, 16000), breaks = seq(0, 16000, by = 1000))
@@ -72,16 +73,18 @@ ggplot(subset_data_long, aes(x = region_of_work, y = value, fill = category)) +
 
 from the bar graph above you can see:
 
-- that women are the second most employed across the different regions
+- that women are the most employed in admnistrative Support
+- members of the visible minority group are represented a lot in the Administrative and Foreign Service
 
 
 
-1. distribution of employment across regions
+1. distribution of employment across job types
+
 ```{r}
-ggplot(subset_data, aes(x = region_of_work, y = all_employees, fill = region_of_work)) +
+ggplot(subset_data, aes(x = occupational_group, y = all_employees, fill = occupational_group)) +
   geom_bar(stat = "identity") +
-  labs(title = "Number of All Employees by Region of Work",
-       x = "Region of Work",
+  labs(title = "Number of All Employees by Employement sector",
+       x = "Occupation type",
        y = "Number of All Employees") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -89,15 +92,16 @@ ggplot(subset_data, aes(x = region_of_work, y = all_employees, fill = region_of_
 
 from the bar graph above you can deduce:
 
-- there is a high rate of employment in NCR+ compared to other regions of work
+- alot of employees are employed in the Administrative and Foreign Service compared to other job sectors
+- there are a few employees in the Law Management
 
-2. Scatter plot for distribution of women across regions of work
+2. Scatter plot for distribution of women across different job sectors
 
 ```{r}
-ggplot(subset_data, aes(x = region_of_work, y = women)) +
+ggplot(subset_data, aes(x = occupational_group, y = women)) +
   geom_point() +
-  labs(title = "Scatter Plot Region of Work vs Women",
-       x = "Region of Work",
+  labs(title = "Scatter Plot occupational group vs Women",
+       x = "Occupational Group",
        y = "Women") +
   theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -105,11 +109,13 @@ ggplot(subset_data, aes(x = region_of_work, y = women)) +
 
 from the scatter plot above we can deduce:
 
-- women employment is under 20,000 in various regions except for NCR‡
+- women employment is high in Adminstrative and foreign service
+- there is low or zero women employed in the law management space
 
 
 
 3. summary of how the employees are spread out
+
 ```{r}
 summary_data <- subset_data %>%
   summarise(

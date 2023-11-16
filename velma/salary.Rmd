@@ -1,5 +1,5 @@
 ---
-title: Distribution of Public Service of Canada Employees by Designated Group and Occupational Category
+title: Distribution of Public Service of Canada Employees by Designated Group and Salary Range
 output:
   pdf_document: default
   word_document: default
@@ -12,11 +12,11 @@ options(warn = -1)
 ```
 
 ## checking if our r is working
-```[r]
+```{r}
 print("Hello R world")
 ```
 
-## Analysis of Table 3
+## Analysis of Table 4
 
 ### we are loading required libraries
 Loading required libraries 
@@ -36,13 +36,13 @@ we also cleaned the data to use numbers only, excluding the percentages
 
 ```{r}
 library(readxl)
-tab03_eng <- read_excel("~/Documents/programming/R/velma/keira/tab03-eng.xls", skip = 4, n_max = 10)
+tab04_eng <- read_excel("Documents/assignments/keira/cleaned/tab04-eng.xls", skip = 4, n_max = 22)
 Sys.setlocale(category = "LC_CTYPE", locale = "en_US.UTF-8")
-tab03_eng <- clean_names(tab03_eng)
-print(colnames(tab03_eng))
-selected_colnames <- c("occupational_group", "all_employees", "women", "members_of_a_visible_minority_group","persons_with_disabilities" , "aboriginal_peoples")
-subset_data <- tab03_eng[, selected_colnames]
-subset_data <- subset_data[complete.cases(tab03_eng$occupational_group), ]
+tab04_eng <- clean_names(tab04_eng)
+print(colnames(tab04_eng))
+selected_colnames <- c("salary_range", "all_employees", "women", "members_of_a_visible_minority_group","persons_with_disabilities" , "aboriginal_peoples")
+subset_data <- tab04_eng[, selected_colnames]
+subset_data <- subset_data[complete.cases(tab04_eng$salary_range), ]
 head(subset_data)
 ```
 
@@ -50,7 +50,7 @@ head(subset_data)
 ### visualization of the data
 
 
-1. Drawing a bar graph showing the different  distrbutions of employees categories across different job types
+1. Drawing a bar graph showing the different salary ranges across different populations
 i) Converted the data to numerical data
 ii) Created a bar graph
 
@@ -60,12 +60,12 @@ subset_data <- subset_data %>%
             as.numeric)
 
 subset_data_long <- subset_data %>%
-  gather(key = "category", value = "value", -occupational_group)
+  gather(key = "category", value = "value", -salary_range)
 
-ggplot(subset_data_long, aes(x = occupational_group, y = value, fill = category)) +
+ggplot(subset_data_long, aes(x = salary_range, y = value, fill = category)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  labs(title = "Population Distribution by occupation type",
-       y = "Population", x = "Occupation Group") +
+  labs(title = "Population Distribution by Salary Type",
+       y = "Population", x = "Salary Range") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_y_continuous(limits = c(0, 16000), breaks = seq(0, 16000, by = 1000))
@@ -73,18 +73,18 @@ ggplot(subset_data_long, aes(x = occupational_group, y = value, fill = category)
 
 from the bar graph above you can see:
 
-- that women are the most employed in admnistrative Support
-- members of the visible minority group are represented a lot in the Administrative and Foreign Service
+- that a few population is paid between 5000 - 9000
 
 
 
-1. distribution of employment across job types
+
+1. distribution of employment across different salary range
 
 ```{r}
-ggplot(subset_data, aes(x = occupational_group, y = all_employees, fill = occupational_group)) +
+ggplot(subset_data, aes(x = salary_range, y = all_employees, fill = salary_range)) +
   geom_bar(stat = "identity") +
-  labs(title = "Number of All Employees by Employement sector",
-       x = "Occupation type",
+  labs(title = "Number of All Employees by Salary Range",
+       x = "Salary Range",
        y = "Number of All Employees") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -92,16 +92,16 @@ ggplot(subset_data, aes(x = occupational_group, y = all_employees, fill = occupa
 
 from the bar graph above you can deduce:
 
-- alot of employees are employed in the Administrative and Foreign Service compared to other job sectors
-- there are a few employees in the Law Management
+- a lot of employees are paid 100,000 and above
+- there is a little population that is paid under 5,000
 
 2. Scatter plot for distribution of women across different job sectors
 
 ```{r}
-ggplot(subset_data, aes(x = occupational_group, y = women)) +
+ggplot(subset_data, aes(x = salary_range, y = women)) +
   geom_point() +
-  labs(title = "Scatter Plot occupational group vs Women",
-       x = "Occupational Group",
+  labs(title = "Scatter Plot for Salary Range vs Women",
+       x = "Salary Range",
        y = "Women") +
   theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -109,8 +109,8 @@ ggplot(subset_data, aes(x = occupational_group, y = women)) +
 
 from the scatter plot above we can deduce:
 
-- women employment is high in Adminstrative and foreign service
-- there is low or zero women employed in the law management space
+- A lot of women are paid between 50,000 - 54,999
+- there is low or zero women paid under 5,000
 
 
 
